@@ -1,0 +1,66 @@
+export default {
+  content: [
+    './index.html',
+    './src/**/*.{js,jsx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#f0f4ff',
+          100: '#e0e9ff',
+          200: '#c1d3ff',
+          300: '#a2bdff',
+          400: '#7e9eff',
+          500: '#5a7cff',
+          600: '#4763e6',
+          700: '#354bcc',
+          800: '#2639b3',
+          900: '#1a279a',
+        },
+        secondary: {
+          50: '#f5f3ff',
+          100: '#ebe7ff',
+          200: '#d7cfff',
+          300: '#c3b8ff',
+          400: '#afa0ff',
+          500: '#9b88ff',
+          600: '#8a6fee',
+          700: '#7855d4',
+          800: '#663cba',
+          900: '#5523a0',
+        },
+        accent: {
+          50: '#fff5f3',
+          100: '#ffeae6',
+          200: '#ffd5cc',
+          300: '#ffbfb3',
+          400: '#ffaa99',
+          500: '#ff9580',
+          600: '#ff8066',
+          700: '#ff6b4d',
+          800: '#ff5633',
+          900: '#ff411a',
+        },
+        background: '#0f1419',
+        foreground: '#f8f9fa',
+        surface: '#1a1f2e',
+        'surface-light': '#252d3d',
+        success: '#10b981',
+        warning: '#f59e0b',
+        danger: '#ef4444',
+      },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        mono: ['Fira Code', 'monospace'],
+      },
+      backdropBlur: {
+        xs: '2px',
+      },
+      boxShadow: {
+        glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+      },
+    },
+  },
+  plugins: [],
+}
