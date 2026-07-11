@@ -269,9 +269,53 @@ class CodeExecutor:
             'actual_output': last_actual_output
         }
     
+    def _validates_stdin_usage(self, code, language):
+        """Check if the code reads from stdin. Reject hardcoded solutions."""
+        language = language.lower()
+
+        if language in ['cpp', 'c++']:
+            # Must use cin, scanf, getline, or gets
+            stdin_patterns = ['cin', 'scanf', 'getline', 'gets(']
+            if not any(p in code for p in stdin_patterns):
+                return False, (
+                    "Your solution must read input from stdin (e.g., using cin or scanf). "
+                    "Do not hardcode test values. Your code should have a main() function "
+                    "that reads N, the array elements, and the target from standard input."
+                )
+        elif language == 'python':
+            # Must use input()
+            if 'input(' not in code:
+                return False, (
+                    "Your solution must read input from stdin using input(). "
+                    "Do not hardcode test values. Write a complete program that reads "
+                    "input and prints the output."
+                )
+        elif language == 'java':
+            # Must use Scanner, BufferedReader, or System.in
+            stdin_patterns = ['Scanner', 'BufferedReader', 'System.in']
+            if not any(p in code for p in stdin_patterns):
+                return False, (
+                    "Your solution must read input from stdin (e.g., using Scanner or BufferedReader). "
+                    "Do not hardcode test values. Write a complete program with a main method "
+                    "that reads input and prints the output."
+                )
+
+        return True, None
+
     def execute(self, code, language, test_cases):
         """Execute code in specified language"""
         language = language.lower()
+
+        # Validate that the code reads from stdin
+        valid, error_msg = self._validates_stdin_usage(code, language)
+        if not valid:
+            return {
+                'passed': 0,
+                'total': len(test_cases),
+                'runtime_ms': 0,
+                'memory_mb': 0,
+                'error': error_msg
+            }
         
         if language in ['cpp', 'c++']:
             return self.execute_cpp(code, test_cases)

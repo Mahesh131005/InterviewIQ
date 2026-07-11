@@ -3,7 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { Play, Clock, AlertCircle, Lightbulb } from 'lucide-react'
 import { Button } from '../components/Button'
 import { Card, CardHeader, CardTitle, CardContent } from '../components/Card'
+import InterviewerPanel from '../components/InterviewerPanel'
 import { interviews, companies } from '../services/api'
+import { useInterviewGuard } from '../context/InterviewGuardContext'
 
 export default function CodingInterview() {
   const [code, setCode] = useState('')
@@ -12,15 +14,18 @@ export default function CodingInterview() {
   const [loading, setLoading] = useState(true)
   const [interviewId, setInterviewId] = useState(null)
   const [error, setError] = useState('')
-  const [language, setLanguage] = useState('cpp') // Default language
+  const [language, setLanguage] = useState('cpp')
   const [isRunning, setIsRunning] = useState(false)
   const [isGettingHint, setIsGettingHint] = useState(false)
   const [hint, setHint] = useState('')
   const [runResult, setRunResult] = useState(null)
   const [customInput, setCustomInput] = useState('')
   const [useCustomInput, setUseCustomInput] = useState(false)
+  const [codeSubmitted, setCodeSubmitted] = useState(false)
+  const [companyName, setCompanyName] = useState('')
   const navigate = useNavigate()
   const location = useLocation()
+  const { setActiveInterview, clearActiveInterview } = useInterviewGuard()
 
   const getBoilerplate = (lang) => {
     switch (lang) {
@@ -101,6 +106,17 @@ export default function CodingInterview() {
           sessionStorage.setItem('currentProblem', JSON.stringify(q));
         }
 
+        // Resolve company name for interviewer panel
+        try {
+          const companyId = location.state?.companyId || (await interviews.getDetails(currentInterviewId)).data?.interview?.company_id;
+          if (companyId) {
+            const companyRes = await companies.getById(companyId);
+            setCompanyName(companyRes.data?.company?.name || '');
+          }
+        } catch (e) {
+          // Non-critical
+        }
+
         // Restore active time remaining
         const cachedTime = sessionStorage.getItem('interviewTimeLeft');
         if (cachedTime) {
@@ -117,6 +133,12 @@ export default function CodingInterview() {
 
     fetchProblem()
   }, [location.state])
+
+  // Register / deregister this interview as the "active" one for the nav guard
+  useEffect(() => {
+    if (interviewId) setActiveInterview(interviewId)
+    return () => clearActiveInterview()
+  }, [interviewId])
 
   const handleRunCode = async () => {
     if (!problem) return;
@@ -171,6 +193,9 @@ export default function CodingInterview() {
 
   const handleSubmit = () => {
     if (!problem || !interviewId) return;
+
+    // Signal the interviewer panel
+    setCodeSubmitted(true)
 
     // Navigate to explanation page with state
     navigate('/explanation', {
@@ -435,10 +460,13 @@ export default function CodingInterview() {
                               <p className="text-danger text-xs mt-1 font-bold block whitespace-pre-wrap">
                                 Output did not match the reference solution.
                                 {'\n'}Expected: {runResult.expected_output}
+                                {runResult.actual_output ? `\nYour Output: ${runResult.actual_output}` : '\nYour code produced no output. Make sure your solution reads from stdin and prints to stdout.'}
                               </p>
                             )
+                          ) : runResult.actual_output ? (
+                            <p className="text-blue-400 text-xs mt-1">Custom testcase output cannot be auto-verified (no reference solution available for this question). Review your output manually.</p>
                           ) : (
-                            <p className="text-warning text-xs mt-1">Output cannot be verified (reference code does not output to stdout).</p>
+                            <p className="text-warning text-xs mt-1">Your code produced no output. Make sure your solution reads from stdin and prints to stdout.</p>
                           )}
                         </>
                       )}
@@ -476,6 +504,28 @@ export default function CodingInterview() {
           </Card>
         </div >
       </div >
+
+
+      {/* AI Interviewer Floating Panel */}
+      {interviewId && problem && (
+        <InterviewerPanel
+          interviewId={interviewId}
+          questionContext={{
+            id: problem.id,
+            question_title: problem.title,
+            question_description: problem.description,
+            difficulty: problem.difficulty,
+            topic_tags: problem.topic ? [problem.topic] : [],
+            expected_complexity: problem.expected_complexity || '',
+            company_track: companyName || 'Tech Company',
+          }}
+          codeSnapshot={code}
+          onCodeSubmitted={codeSubmitted}
+          onSessionScored={(scores) => {
+            console.log('Interviewer scores:', scores)
+          }}
+        />
+      )}
     </div >
   )
 }

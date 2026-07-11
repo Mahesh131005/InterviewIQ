@@ -5,6 +5,7 @@ from executor import CodeExecutor
 from complexity_analyzer import ComplexityAnalyzer
 from evaluator import ExplanationEvaluator, BehavioralEvaluator
 from adaptive_engine import AdaptiveEngine
+from ai_interviewer import interviewer_bp
 
 app = Flask(__name__)
 
@@ -17,6 +18,9 @@ complexity_analyzer = ComplexityAnalyzer()
 explanation_evaluator = ExplanationEvaluator()
 behavioral_evaluator = BehavioralEvaluator()
 adaptive_engine = AdaptiveEngine()
+
+# Register AI Interviewer blueprint
+app.register_blueprint(interviewer_bp)
 
 # Health check
 @app.route('/health', methods=['GET'])

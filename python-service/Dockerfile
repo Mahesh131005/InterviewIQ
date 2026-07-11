@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     g++ \
     gcc \
-    openjdk-17-jdk-slim \
+    default-jdk \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements
@@ -22,6 +22,11 @@ COPY app.py .
 COPY executor.py .
 COPY complexity_analyzer.py .
 COPY evaluator.py .
+COPY adaptive_engine.py .
+COPY ai_interviewer.py .
+COPY interviewer_prompts.py .
+COPY fallback_questions.json .
+COPY test_executor.py .
 
 # Set environment variables
 ENV FLASK_APP=app.py
@@ -29,6 +34,7 @@ ENV PYTHONUNBUFFERED=1
 ENV PORT=5001
 ENV CODE_TIMEOUT=2000
 ENV MEMORY_LIMIT=256
+ENV OLLAMA_HOST=host.docker.internal:11434
 
 # Expose port
 EXPOSE 5001

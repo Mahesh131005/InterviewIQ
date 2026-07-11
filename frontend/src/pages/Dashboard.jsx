@@ -91,16 +91,30 @@ export default function Dashboard() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto p-4 md:p-8">
         {/* CTA Section */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <Link to="/practice">
+            <Card glass className="h-full hover:border-success transition-all cursor-pointer group">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Practice Problems</CardTitle>
+                  <p className="text-sm text-gray-400 mt-2">Solve problems freely without timer</p>
+                </div>
+                <div className="w-12 h-12 bg-gradient-to-br from-success to-primary rounded-lg flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                  <Code size={24} />
+                </div>
+              </div>
+            </Card>
+          </Link>
+
           <Link to="/setup">
             <Card glass className="h-full hover:border-primary transition-all cursor-pointer group">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Start New Interview</CardTitle>
-                  <p className="text-sm text-gray-400 mt-2">Practice coding and behavioral questions</p>
+                  <CardTitle>Start Mock Interview</CardTitle>
+                  <p className="text-sm text-gray-400 mt-2">Simulate real AI tech interviews</p>
                 </div>
                 <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                  <Code size={24} />
+                  <Brain size={24} />
                 </div>
               </div>
             </Card>

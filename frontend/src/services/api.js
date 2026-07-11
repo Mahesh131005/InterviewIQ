@@ -99,6 +99,29 @@ export const analytics = {
     api.get('/analytics/comparison'),
 };
 
+// Interviewer endpoints
+export const interviewer = {
+  startSession: (interviewId, questionId, companyTrack) =>
+    api.post('/interviewer/session/start', { interviewId, questionId, companyTrack }),
+  chat: (sessionId, phase, userMessage, context, codeSubmitted = false) =>
+    api.post('/interviewer/chat', {
+      session_id: sessionId,
+      phase,
+      user_message: userMessage,
+      context,
+      code_submitted: codeSubmitted,
+    }),
+  endSession: (sessionId) =>
+    api.post('/interviewer/session/end', { session_id: sessionId }),
+};
+
+// Practice endpoints
+export const practice = {
+  getProblems: (params) => api.get('/practice', { params }),
+  getProblemDetails: (id) => api.get(`/practice/${id}`),
+  submitSolution: (id, code, language) => api.post(`/practice/${id}/submit`, { code, language }),
+};
+
 // Utility function for error handling
 export const handleApiError = (error) => {
   if (error.response) {

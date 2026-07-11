@@ -13,6 +13,8 @@ import companyRoutes from './routes/companyRoutes.js';
 import interviewRoutes from './routes/interviewRoutes.js';
 import submissionRoutes from './routes/submissionRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
+import interviewerRoutes from './routes/interviewerRoutes.js';
+import practiceRoutes from './routes/practiceRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -36,7 +38,7 @@ app.use(cors({
 // Rate limiting
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000,
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 1000,
   message: 'Too many requests from this IP',
 });
 app.use(limiter);
@@ -58,6 +60,8 @@ app.use('/api/companies', companyRoutes);
 app.use('/api/interviews', interviewRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/interviewer', interviewerRoutes);
+app.use('/api/practice', practiceRoutes);
 
 // 404 handler
 app.use((req, res) => {

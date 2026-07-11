@@ -391,6 +391,185 @@ export const SessionHistory = {
   },
 };
 
+// Interviewer Session Model
+export const InterviewerSession = {
+  create: async (userId, interviewId, questionId, companyTrack) => {
+    const result = await pool.query(
+      `INSERT INTO interviewer_sessions (user_id, interview_id, question_id, company_track)
+       VALUES ($1, $2, $3, $4) RETURNING *`,
+      [userId, interviewId, questionId, companyTrack]
+    );
+    return result.rows[0];
+  },
+
+  findById: async (id) => {
+    const result = await pool.query('SELECT * FROM interviewer_sessions WHERE id = $1', [id]);
+    return result.rows[0];
+  },
+
+  findByInterview: async (interviewId) => {
+    const result = await pool.query(
+      'SELECT * FROM interviewer_sessions WHERE interview_id = $1 ORDER BY started_at DESC',
+      [interviewId]
+    );
+    return result.rows;
+  },
+
+  update: async (id, updates) => {
+    const keys = Object.keys(updates);
+    const values = Object.values(updates);
+    const setClause = keys.map((key, i) => `${key} = $${i + 1}`).join(', ');
+
+    const result = await pool.query(
+      `UPDATE interviewer_sessions SET ${setClause} WHERE id = $${keys.length + 1} RETURNING *`,
+      [...values, id]
+    );
+    return result.rows[0];
+  },
+};
+
+// Practice Models
+export const PracticeProblem = {
+  findById: async (id) => {
+    const result = await pool.query('SELECT * FROM practice_problems WHERE id = $1', [id]);
+    if (!result.rows[0]) return null;
+    
+    // Get topics
+    const topics = await pool.query('SELECT topic FROM problem_topics WHERE problem_id = $1', [id]);
+    result.rows[0].topics = topics.rows.map(r => r.topic);
+    
+    // Get companies
+    const companies = await pool.query('SELECT company FROM problem_companies WHERE problem_id = $1', [id]);
+    result.rows[0].companies = companies.rows.map(r => r.company);
+    
+    return result.rows[0];
+  },
+
+  search: async (userId, { query = '', difficulty, topic, company, sort = 'popularity', limit = 20, offset = 0 }) => {
+    let sql = `
+      SELECT p.*,
+        COALESCE(
+          (SELECT status FROM practice_submissions s WHERE s.problem_id = p.id AND s.user_id = $1 ORDER BY created_at DESC LIMIT 1),
+          'unsolved'
+        ) as user_status,
+        ARRAY(SELECT topic FROM problem_topics t WHERE t.problem_id = p.id) as topics,
+        ARRAY(SELECT company FROM problem_companies c WHERE c.problem_id = p.id) as companies
+      FROM practice_problems p
+      WHERE 1=1
+    `;
+    const params = [userId];
+    let paramIndex = 2;
+
+    if (query) {
+      sql += ` AND p.title ILIKE $${paramIndex}`;
+      params.push(`%${query}%`);
+      paramIndex++;
+    }
+
+    if (difficulty) {
+      const difficulties = difficulty.split(',');
+      sql += ` AND p.difficulty = ANY($${paramIndex})`;
+      params.push(difficulties);
+      paramIndex++;
+    }
+
+    if (topic) {
+      const topics = topic.split(',');
+      sql += ` AND EXISTS (SELECT 1 FROM problem_topics t WHERE t.problem_id = p.id AND t.topic = ANY($${paramIndex}))`;
+      params.push(topics);
+      paramIndex++;
+    }
+
+    if (company) {
+      const companies = company.split(',');
+      sql += ` AND EXISTS (SELECT 1 FROM problem_companies c WHERE c.problem_id = p.id AND c.company = ANY($${paramIndex}))`;
+      params.push(companies);
+      paramIndex++;
+    }
+
+    if (sort === 'popularity') {
+      sql += ' ORDER BY p.total_attempts DESC';
+    } else if (sort === 'acceptance') {
+      sql += ' ORDER BY (CASE WHEN p.total_attempts = 0 THEN 0 ELSE p.accepted_attempts::float / p.total_attempts END) DESC';
+    } else if (sort === 'difficulty') {
+      sql += ` ORDER BY CASE p.difficulty WHEN 'easy' THEN 1 WHEN 'medium' THEN 2 WHEN 'hard' THEN 3 END`;
+    } else {
+      sql += ' ORDER BY p.created_at DESC';
+    }
+
+    sql += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(limit, offset);
+
+    const result = await pool.query(sql, params);
+    
+    // Get total count for pagination
+    let countSql = `SELECT COUNT(DISTINCT p.id) FROM practice_problems p WHERE 1=1`;
+    const countParams = [];
+    let countIndex = 1;
+    
+    if (query) {
+      countSql += ` AND p.title ILIKE $${countIndex}`;
+      countParams.push(`%${query}%`);
+      countIndex++;
+    }
+    if (difficulty) {
+      countSql += ` AND p.difficulty = ANY($${countIndex})`;
+      countParams.push(difficulty.split(','));
+      countIndex++;
+    }
+    if (topic) {
+      countSql += ` AND EXISTS (SELECT 1 FROM problem_topics t WHERE t.problem_id = p.id AND t.topic = ANY($${countIndex}))`;
+      countParams.push(topic.split(','));
+      countIndex++;
+    }
+    if (company) {
+      countSql += ` AND EXISTS (SELECT 1 FROM problem_companies c WHERE c.problem_id = p.id AND c.company = ANY($${countIndex}))`;
+      countParams.push(company.split(','));
+      countIndex++;
+    }
+    
+    const countResult = await pool.query(countSql, countParams);
+
+    return {
+      problems: result.rows,
+      total: parseInt(countResult.rows[0].count)
+    };
+  },
+  
+  incrementAttempts: async (id, isAccepted) => {
+    let sql = 'UPDATE practice_problems SET total_attempts = total_attempts + 1';
+    if (isAccepted) {
+      sql += ', accepted_attempts = accepted_attempts + 1';
+    }
+    sql += ' WHERE id = $1 RETURNING *';
+    const result = await pool.query(sql, [id]);
+    return result.rows[0];
+  }
+};
+
+export const PracticeTestcase = {
+  findByProblem: async (problemId, includeHidden = false) => {
+    let query = 'SELECT * FROM practice_testcases WHERE problem_id = $1';
+    if (!includeHidden) {
+      query += ' AND is_hidden = false';
+    }
+    query += ' ORDER BY created_at ASC';
+    const result = await pool.query(query, [problemId]);
+    return result.rows;
+  }
+};
+
+export const PracticeSubmission = {
+  create: async (userId, problemId, status, code, language, runtimeMs = null, memoryMb = null) => {
+    const result = await pool.query(
+      `INSERT INTO practice_submissions (user_id, problem_id, status, code, language, runtime_ms, memory_mb)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [userId, problemId, status, code, language, runtimeMs, memoryMb]
+    );
+    return result.rows[0];
+  }
+};
+
 export default {
   User,
   Company,
@@ -401,4 +580,8 @@ export default {
   TopicPerformance,
   CompanyPerformance,
   SessionHistory,
+  InterviewerSession,
+  PracticeProblem,
+  PracticeTestcase,
+  PracticeSubmission,
 };

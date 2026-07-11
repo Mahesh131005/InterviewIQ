@@ -67,11 +67,14 @@ export default function PastSessions() {
       company: session.company_name,
       topic: topic,
       difficulty: difficulty,
-      // Format timestamp natively for browser tz
       date: new Date(session.created_at).toLocaleDateString(),
       time: new Date(session.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      score: Math.round(session.overall_score * 100),
-      duration: session.completed_at ? Math.round((new Date(session.completed_at) - new Date(session.created_at)) / 60000) + 'm' : 'In Progress'
+      score: Math.round((session.overall_score || 0) * 100),
+      // Show actual duration if completed, otherwise show "Completed" (score was saved)
+      duration: session.completed_at
+        ? Math.round((new Date(session.completed_at) - new Date(session.created_at)) / 60000) + 'm'
+        : 'Completed',
+      isCompleted: true, // always true now — incomplete ones get scored on nav-away
     }
   })
 
@@ -207,7 +210,7 @@ export default function PastSessions() {
                       <td className="px-6 py-4 text-sm text-gray-300">{session.duration}</td>
                       <td className="px-6 py-4">
                         <span className={`font-bold ${getScoreColor(session.score)}`}>
-                          {session.duration === 'In Progress' ? '--' : `${session.score}%`}
+                          {session.score > 0 ? `${session.score}%` : '--'}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -216,7 +219,6 @@ export default function PastSessions() {
                           size="sm"
                           className="gap-2 text-primary hover:text-primary-light"
                           onClick={() => navigate('/result', { state: { interviewId: session.id } })}
-                          disabled={session.duration === 'In Progress'}
                         >
                           <Eye size={16} />
                           View Full Report

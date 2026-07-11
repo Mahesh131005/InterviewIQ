@@ -149,6 +149,25 @@ CREATE INDEX idx_topic_performance_user_id ON topic_performance(user_id);
 CREATE INDEX idx_company_performance_user_id ON company_performance(user_id);
 CREATE INDEX idx_session_history_user_id ON session_history(user_id);
 
+-- AI Interviewer Sessions Table
+CREATE TABLE interviewer_sessions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  interview_id UUID REFERENCES interviews(id) ON DELETE CASCADE,
+  question_id UUID REFERENCES questions(id) ON DELETE SET NULL,
+  company_track VARCHAR(100),
+  conversation_history JSONB DEFAULT '[]',
+  explanation_score FLOAT DEFAULT 0,
+  behavioral_score FLOAT DEFAULT 0,
+  explanation_feedback TEXT,
+  behavioral_feedback TEXT,
+  started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  ended_at TIMESTAMP
+);
+
+CREATE INDEX idx_interviewer_sessions_user_id ON interviewer_sessions(user_id);
+CREATE INDEX idx_interviewer_sessions_interview_id ON interviewer_sessions(interview_id);
+
 -- Insert Sample Companies
 INSERT INTO companies (name, difficulty_bias, description) VALUES
 ('Google', '{"easy": 15, "medium": 35, "hard": 50}', 'Google - Focusing on system design and algorithmic problem solving'),
@@ -159,3 +178,63 @@ INSERT INTO companies (name, difficulty_bias, description) VALUES
 ('SAP Labs', '{"easy": 35, "medium": 35, "hard": 30}', 'SAP Labs - Enterprise solutions and optimization'),
 ('Microsoft', '{"easy": 20, "medium": 40, "hard": 40}', 'Microsoft - Trees, graphs, and optimization'),
 ('Apple', '{"easy": 15, "medium": 40, "hard": 45}', 'Apple - Hardware-adjacent algorithms');
+-- Practice Problems Tables
+
+CREATE TABLE IF NOT EXISTS practice_problems (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  title VARCHAR(255) NOT NULL,
+  description TEXT NOT NULL,
+  difficulty VARCHAR(20) CHECK (difficulty IN ('easy', 'medium', 'hard')),
+  expected_complexity VARCHAR(20),
+  constraints TEXT,
+  sample_input TEXT,
+  sample_output TEXT,
+  hints JSONB,
+  input_format TEXT,
+  output_format TEXT,
+  reference_code TEXT,
+  reference_language VARCHAR(20) DEFAULT 'python',
+  total_attempts INT DEFAULT 0,
+  accepted_attempts INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS problem_topics (
+  problem_id UUID REFERENCES practice_problems(id) ON DELETE CASCADE,
+  topic VARCHAR(50) NOT NULL,
+  PRIMARY KEY (problem_id, topic)
+);
+
+CREATE TABLE IF NOT EXISTS problem_companies (
+  problem_id UUID REFERENCES practice_problems(id) ON DELETE CASCADE,
+  company VARCHAR(100) NOT NULL,
+  PRIMARY KEY (problem_id, company)
+);
+
+CREATE TABLE IF NOT EXISTS practice_testcases (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  problem_id UUID REFERENCES practice_problems(id) ON DELETE CASCADE,
+  input TEXT NOT NULL,
+  expected_output TEXT NOT NULL,
+  is_hidden BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS practice_submissions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  problem_id UUID REFERENCES practice_problems(id) ON DELETE CASCADE,
+  status VARCHAR(20) CHECK (status IN ('solved', 'attempted', 'failed')),
+  code TEXT NOT NULL,
+  language VARCHAR(20) NOT NULL,
+  runtime_ms FLOAT,
+  memory_mb FLOAT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for fast filtering
+CREATE INDEX IF NOT EXISTS idx_practice_problems_title ON practice_problems(title);
+CREATE INDEX IF NOT EXISTS idx_practice_problems_diff ON practice_problems(difficulty);
+CREATE INDEX IF NOT EXISTS idx_problem_topics_topic ON problem_topics(topic);
+CREATE INDEX IF NOT EXISTS idx_problem_companies_comp ON problem_companies(company);
+CREATE INDEX IF NOT EXISTS idx_practice_submissions_user_prob ON practice_submissions(user_id, problem_id);

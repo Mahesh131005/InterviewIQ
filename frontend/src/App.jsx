@@ -2,6 +2,7 @@ import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { InterviewGuardProvider } from './context/InterviewGuardContext'
 import { Layout } from './components/Layout'
 
 // Pages
@@ -18,10 +19,11 @@ import Analytics from './pages/Analytics'
 import Settings from './pages/Settings'
 import InterviewSetup from './pages/InterviewSetup'
 import FollowUpRound from './pages/FollowUpRound'
+import PracticeList from './pages/PracticeList'
+import ProblemDetail from './pages/ProblemDetail'
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth()
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -32,17 +34,12 @@ function PrivateRoute({ children }) {
       </div>
     )
   }
-
-  if (!user) {
-    return <Navigate to="/login" replace />
-  }
-
+  if (!user) return <Navigate to="/login" replace />
   return children
 }
 
 function AppContent() {
   const { user, loading } = useAuth()
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -53,16 +50,12 @@ function AppContent() {
       </div>
     )
   }
-
   return (
     <Layout>
       <Routes>
-        {/* Public routes */}
         <Route path="/" element={!user ? <Landing /> : <Navigate to="/dashboard" />} />
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/dashboard" />} />
         <Route path="/register" element={!user ? <Register /> : <Navigate to="/dashboard" />} />
-
-        {/* Private routes */}
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
         <Route path="/setup" element={<PrivateRoute><InterviewSetup /></PrivateRoute>} />
         <Route path="/interviews" element={<PrivateRoute><CodingInterview /></PrivateRoute>} />
@@ -73,8 +66,8 @@ function AppContent() {
         <Route path="/past-sessions" element={<PrivateRoute><PastSessions /></PrivateRoute>} />
         <Route path="/analytics" element={<PrivateRoute><Analytics /></PrivateRoute>} />
         <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
-
-        {/* Catch all */}
+        <Route path="/practice" element={<PrivateRoute><PracticeList /></PrivateRoute>} />
+        <Route path="/practice/:id" element={<PrivateRoute><ProblemDetail /></PrivateRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>
@@ -85,7 +78,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <AppContent />
+        <InterviewGuardProvider>
+          <AppContent />
+        </InterviewGuardProvider>
       </AuthProvider>
     </ThemeProvider>
   )

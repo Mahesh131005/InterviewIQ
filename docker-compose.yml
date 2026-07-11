@@ -25,6 +25,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    image: ai_interviewer_backend_img
     container_name: ai_interviewer_backend
     environment:
       NODE_ENV: ${NODE_ENV:-development}
@@ -51,12 +52,16 @@ services:
     build:
       context: ./python-service
       dockerfile: Dockerfile
+    image: ai_interviewer_python_service_img
     container_name: ai_interviewer_python_service
     environment:
       PORT: 5001
       DEBUG: ${DEBUG:-False}
       CODE_TIMEOUT: 2000
       MEMORY_LIMIT: 256
+      OLLAMA_HOST: host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "5001:5001"
     volumes:
@@ -67,14 +72,17 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
+    image: ai_interviewer_frontend_img
     container_name: ai_interviewer_frontend
     environment:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:5000}
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:5000/api}
     ports:
       - "5173:5173"
+    stdin_open: true
+    tty: true
     volumes:
       - ./frontend/src:/app/src
-    command: npm run dev
+    command: npm run dev -- --host
 
 volumes:
   postgres_data:

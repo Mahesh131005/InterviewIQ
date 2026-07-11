@@ -1,0 +1,125 @@
+{
+  "intro": [
+    "Welcome! I'm glad you could make it today. Let me walk you through the problem we'll be working on together. Take your time to read through it, and then I'd love to hear your initial thoughts on how you'd approach it.",
+    "Hi there! Thanks for joining this interview session. I'll present you with a coding challenge in a moment. Before you start coding, I'd like you to talk me through your thought process. Ready?",
+    "Hello! Let's get started. I have an interesting problem for you today. Once you've read through it, please share your initial approach — what data structures or algorithms come to mind?"
+  ],
+  "approach": {
+    "default": [
+      "That's an interesting starting point. Can you walk me through the time complexity of that approach?",
+      "Good thinking. What edge cases do you think we should consider here?",
+      "I see where you're going. Have you considered what happens with duplicate values?",
+      "Interesting. Is there a way to optimize that further using a different data structure?",
+      "What would be the space complexity of your approach?",
+      "How would your solution handle an empty input?"
+    ],
+    "arrays": [
+      "How would you handle the case where the array is sorted vs unsorted?",
+      "Have you considered using a two-pointer technique here?",
+      "What if the array contained negative numbers — would your approach still work?"
+    ],
+    "hash table": [
+      "Good choice with the hash map. What's the average vs worst-case lookup time?",
+      "How would you handle hash collisions in your approach?",
+      "What would be the space tradeoff of using a hash table here?"
+    ],
+    "dynamic programming": [
+      "Can you identify the overlapping subproblems in this scenario?",
+      "What would your base case look like?",
+      "Would a top-down or bottom-up approach be more efficient here?"
+    ],
+    "tree": [
+      "What type of tree traversal would work best here?",
+      "How would you handle the case of an unbalanced tree?",
+      "Have you considered using recursion vs an iterative approach with a stack?"
+    ],
+    "graph": [
+      "Would BFS or DFS be more appropriate for this problem?",
+      "How would you detect cycles in your approach?",
+      "What data structure would you use to represent the graph?"
+    ],
+    "string": [
+      "How would you handle unicode or special characters?",
+      "Have you considered using a sliding window approach?",
+      "What's the time complexity of string concatenation in your language of choice?"
+    ],
+    "sorting": [
+      "Which sorting algorithm would you choose and why?",
+      "Could we solve this without fully sorting the input?",
+      "What's the best possible time complexity for a comparison-based sort?"
+    ],
+    "binary search": [
+      "What condition would you use to decide which half to search?",
+      "How would you handle the boundaries to avoid infinite loops?",
+      "Could you apply binary search on the answer space here?"
+    ],
+    "linked list": [
+      "How would you handle the case of a single-node list?",
+      "Have you considered using a fast and slow pointer technique?",
+      "What are the advantages of your approach over using an array?"
+    ]
+  },
+  "coding": {
+    "default": [
+      "I notice you're building up your solution. Can you explain why you chose that particular data structure?",
+      "Interesting implementation choice. What's the time complexity of this inner loop?",
+      "I see you're using recursion here. Have you considered the stack depth for large inputs?",
+      "Good progress. How would you handle the case where the input is at its maximum constraint size?",
+      "Walk me through what happens in your code when the input is empty.",
+      "Why did you choose this variable naming convention? Does it help readability?"
+    ]
+  },
+  "debrief": {
+    "default": [
+      "Good job on the implementation. If the input size grew to 10^9, would your solution still work? Why or why not?",
+      "Can you think of an alternative approach that might use less memory?",
+      "If you had more time, what would you optimize first in your code?",
+      "How would you modify your solution to handle a stream of inputs instead of a fixed array?",
+      "What trade-offs did you make in your implementation, and are you comfortable with them?",
+      "If this were production code, what error handling would you add?"
+    ]
+  },
+  "behavioral": {
+    "Google": [
+      "Tell me about a time you had to solve a technically ambiguous problem with incomplete requirements. How did you navigate the uncertainty?",
+      "Describe a situation where you had to push back on a technical decision made by a senior colleague. What was the outcome?"
+    ],
+    "Amazon": [
+      "Tell me about a time you went above and beyond for a customer or end user. What drove your decision?",
+      "Describe a situation where you had to make a decision with limited data. How did you approach it?"
+    ],
+    "Meta": [
+      "Tell me about a time you had to move fast and ship something under tight deadlines. How did you balance speed with quality?",
+      "Describe a project where you took bold initiative that others were hesitant about."
+    ],
+    "Microsoft": [
+      "Tell me about a time you collaborated with a cross-functional team to deliver a complex feature. What was your role?",
+      "Describe a situation where you had to learn a new technology quickly to solve a problem."
+    ],
+    "Goldman Sachs": [
+      "Tell me about a time you identified a risk in a project and took steps to mitigate it.",
+      "Describe a situation where you had to explain a complex technical concept to a non-technical stakeholder."
+    ],
+    "Adobe": [
+      "Tell me about a time you designed a creative solution to a user experience problem.",
+      "Describe a project where you balanced technical constraints with design requirements."
+    ],
+    "Apple": [
+      "Tell me about a time you obsessed over the details of a product or feature you built.",
+      "Describe a situation where you had to say no to a feature request and why."
+    ],
+    "SAP Labs": [
+      "Tell me about a time you worked on improving the scalability of an enterprise system.",
+      "Describe a situation where you had to integrate multiple complex systems together."
+    ],
+    "default": [
+      "Tell me about a challenging project you worked on. What was your approach and what did you learn?",
+      "Describe a time when you received critical feedback on your code. How did you respond?"
+    ]
+  },
+  "closing": [
+    "Thank you for the great conversation today. You showed solid problem-solving skills, and I appreciate how clearly you communicated your thinking. Best of luck!",
+    "We're wrapping up now. I really enjoyed hearing your approach — you have a thoughtful way of breaking down problems. Keep it up!",
+    "That's all for today. You did a great job articulating your reasoning, which is just as important as getting the right answer. Thanks for your time!"
+  ]
+}
